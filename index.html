@@ -1072,7 +1072,7 @@ body {
       <p>다만 이렇게 생각합니다. 컨테이너 보안도 결국 세 가지 문제로 귀결됩니다. 누가 무엇에 접근할 수 있는지의 권한 문제, 어떤 트래픽이 허용되는지의 네트워크 문제, 그리고 정책을 코드로 강제하는 자동화 문제입니다. 이 세 가지는 제가 지금까지 해온 작업과 본질적으로 같습니다.</p>
       <p>구체적으로 말씀드리면, Kubernetes에서 누가 어떤 리소스에 접근할 수 있는지를 정의하는 RBAC는 제가 AWS에서 설계해온 IAM 최소 권한 체계와 같은 원칙입니다. 역할을 세분화하고, 필요한 권한만 부여하고, Terraform으로 코드화한다는 흐름이 동일합니다.</p>
       <p>네트워크 쪽도 마찬가지입니다. Kubernetes의 Network Policy는 Pod 간 통신을 허용·차단하는 규칙인데, 이것은 제가 Security Group에서 SG ID 참조 방식으로 특정 리소스 그룹 간 통신만 허용하던 방식과 개념이 같습니다. 어떤 워크로드가 어떤 워크로드와 통신할 수 있는지를 명시적으로 정의한다는 원칙이 동일합니다.</p>
-      <p>그리고 OPA/Gatekeeper는 제가 CI/CD 파이프라인에서 tfsec와 checkov로 구현했던 "배포 전 정책 게이트"를 Kubernetes 클러스터 안에서 그대로 구현하는 도구입니다. 배포 요청이 들어올 때 정책을 검사하고 위반 시 차단한다는 동작 방식이 완전히 같습니다.</p>
+      <!-- <p>그리고 OPA/Gatekeeper는 제가 CI/CD 파이프라인에서 tfsec와 checkov로 구현했던 "배포 전 정책 게이트"를 Kubernetes 클러스터 안에서 그대로 구현하는 도구입니다. 배포 요청이 들어올 때 정책을 검사하고 위반 시 차단한다는 동작 방식이 완전히 같습니다.</p> -->
       <p>EKS 실무 경험의 격차는 분명 존재하고, 입사 후 빠르게 따라잡아야 한다는 것을 알고 있습니다. 현재 CIS Kubernetes Benchmark와 AWS EKS 보안 가이드를 학습하고 있으며, 기존 인프라 보안 설계 역량이 컨테이너 환경에서 실질적인 기여로 이어질 수 있다고 생각합니다.
       <span class="tail-link" onclick="goToTech('k8s-section')">📚 K8s 구조 상세 학습 →</span></p>
       <div class="warning-box">⚠️ 약점은 <strong>인정 → 구조적 근거 → 학습 중</strong> 순서로. "모른다"가 아니라 "기존 경험과 연결되는 이유"를 설명하는 게 핵심.</div>
@@ -1089,7 +1089,7 @@ body {
       <svg class="qa-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
     <div class="qa-a">
-      <p>Sentinel Policy 직접 운영 경험은 없습니다. 다만 <strong>tfsec·checkov를 CI/CD 파이프라인에 통합하여 policy-as-code를 운영</strong>한 경험이 있어 Sentinel의 구조와 목적은 이미 이해하고 있습니다.</p>
+      <p>Sentinel Policy 직접 운영 경험은 없습니다. 다만 <strong>tfsec·checkov를 CI/CD 파이프라인에 통합하여 운영</strong>한 경험이 있어 Sentinel의 구조와 목적은 이미 이해하고 있습니다.</p>
       <p>Sentinel은 Terraform Cloud·Enterprise에서 plan 결과를 기반으로 배포 전 정책을 강제하는 HashiCorp policy framework입니다. 제가 운영한 tfsec·checkov 게이트와 목적이 동일하고, rule 언어는 Terraform 실무 경험이 있으면 진입 장벽이 낮습니다.</p>
       <p>합류 후에는 현재 tfsec·checkov 정책을 Sentinel rule로 마이그레이션하는 방식으로 빠르게 실무 적용이 가능합니다.
       <span class="tail-link" onclick="goToTech('tfsec-section')">📚 tfsec/checkov 학습 →</span></p>
@@ -1100,7 +1100,7 @@ body {
           ⚡ 꼬리질문 — Sentinel rule을 실제로 작성해본 적이 없는데 어떻게 빠르게 습득할 수 있나요?
         </button>
         <div class="inline-toggle-content">
-          Sentinel rule의 기본 구조는 다음과 같습니다:<br><br><code>import "tfplan/v2" as tfplan</code><br><code>main = rule { all tfplan.resource_changes as _, rc { rc.type != "aws_s3_bucket" or rc.change.after.acl != "public-read" }}</code><br><br>이 코드가 하는 일: Terraform plan에서 S3 버킷 변경 사항을 순회하면서, ACL이 public-read인 버킷이 있으면 배포를 차단합니다.<br><br>tfsec에서 <code>aws-s3-no-public-buckets</code> 규칙이 하는 것과 완전히 동일한 로직입니다. 제가 이미 이 규칙을 운영해봤기 때문에 <strong>'무엇을 검사해야 하는지'는 알고 있고, Sentinel의 문법만 익히면 됩니다.</strong> HCL과 유사한 문법이라 Terraform을 써봤다면 학습 곡선이 낮습니다.
+          Sentinel rule의 기본 구조는 다음과 같습니다:<br><br><code>import "tfplan/v2" as tfplan</code><br><code>main = rule { all tfplan.resource_changes as _, rc { rc.type != "aws_s3_bucket" or rc.change.after.acl != "public-read" }}</code><br><br>이 코드가 하는 일: Terraform plan에서 S3 버킷 변경 사항을 순회하면서, ACL이 public-read인 버킷이 있으면 배포를 차단합니다.<br><br>tfsec에서 <code>aws-s3-no-public-buckets</code> 규칙이 하는 것과 완전히 동일한 로직입니다. 제가 이미 이 규칙을 운영해봤기 때문에 <strong>'무엇을 검사해야 하는지'는 알고 있고, Sentinel의 문법만 익히면 됩니다.</strong> HCL과 유사한 문법이라 Terraform을 써봤다면 Learning Curve 낮습니다.
         </div>
       </div>
     </div>
